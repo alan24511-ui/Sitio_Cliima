@@ -14,6 +14,8 @@ export class WeatherService {
   private readonly URL_GEOCODING = 'https://geocoding-api.open-meteo.com/v1/search';
   private readonly URL_FORECAST = 'https://api.open-meteo.com/v1/forecast';
   private readonly URL_AIR_QUALITY = 'https://air-quality-api.open-meteo.com/v1/air-quality';
+  private readonly URL_ELEVATION = 'https://api.open-meteo.com/v1/elevation';
+  private readonly URL_MARINE = 'https://marine-api.open-meteo.com/v1/marine';
 
   // MÉTODO 1: nombre de ciudad -> lista de coincidencias con coordenadas
   getCities(name: string): Observable<City[]> {
@@ -92,9 +94,32 @@ private parseAirQuality(data: any): AirQuality {
         europeanAqi: current['european_aqi']
     };
 }
-  // getElevation(...)
-  // getMarineWeather(...)
-  // getHistoricalWeather(...)
+// MÉTODO 4: elevación de una ciudad seleccionada
+getElevation(city: City): Observable<any> {
+
+  const params = new HttpParams()
+    .set('latitude', city.latitude)
+    .set('longitude', city.longitude);
+
+  return this.http.get(this.URL_ELEVATION, { params })
+    .pipe(
+      first()
+    );
+}
+// MÉTODO 5: información marina de una ciudad seleccionada
+getMarineWeather(city: City): Observable<any> {
+
+  const params = new HttpParams()
+    .set('latitude', city.latitude)
+    .set('longitude', city.longitude)
+    .set('hourly', 'wave_height,wave_direction,wave_period')
+    .set('timezone', 'auto');
+
+  return this.http.get(this.URL_MARINE, { params })
+    .pipe(
+      first()
+    );
+}  // getHistoricalWeather(...)
   // getHistoricalForecast(...)
   // getECMWF(...)
   // getPreviousRuns(...)
