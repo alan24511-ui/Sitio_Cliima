@@ -1,41 +1,94 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { WeatherService } from './core/services/weather.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  template: ''
+  imports: [FormsModule],
+  templateUrl: './app.html'
 })
-export class App implements OnInit {
+export class App {
   private weatherService = inject(WeatherService);
 
-  ngOnInit(): void {
-    console.log('===== PRUEBA WEATHER SERVICE =====');
+  cityName = 'Monterrey';
+  startDate = '2026-09-15';
+  endDate = '2026-09-20';
 
-    this.weatherService.getCities('Monterrey').subscribe({
+  city: any;
+  weather: any;
+  air: any;
+  elevation: any;
+  marine: any;
+  historical: any;
+  loading = false;
+
+  searchCity() {
+    this.loading = true;
+
+    this.weatherService.getCities(this.cityName).subscribe({
       next: cities => {
-        console.log('MÉTODO 1:', cities);
-        if (!cities.length) return console.log('No se encontraron ciudades.');
+        if (!cities.length) {
+          this.loading = false;
+          this.city = null;
+          return;
+        }
 
-        const city = cities[0];
-        console.log('Ciudad:', city);
+        this.city = cities[0];
 
-        this.weatherService.getCurrentWeather(city.latitude, city.longitude)
-          .subscribe({ next: data => console.log('MÉTODO 2:', data), error: e => console.error('Error M2:', e) });
+        this.weatherService
+          .getCurrentWeather(this.city.latitude, this.city.longitude)
+          .subscribe(data => this.weather = data);
 
-        this.weatherService.getAirQuality(city.latitude, city.longitude)
-          .subscribe({ next: data => console.log('MÉTODO 3:', data), error: e => console.error('Error M3:', e) });
+        this.weatherService
+          .getAirQuality(this.city.latitude, this.city.longitude)
+          .subscribe(data => this.air = data);
 
-        this.weatherService.getElevation(city)
-          .subscribe({ next: data => console.log('MÉTODO 4:', data), error: e => console.error('Error M4:', e) });
+        this.weatherService
+          .getElevation(this.city)
+          .subscribe(data => this.elevation = data);
 
-        this.weatherService.getMarineWeather(city)
-          .subscribe({ next: data => console.log('MÉTODO 5:', data), error: e => console.error('Error M5:', e) });
+        this.weatherService
+          .getMarineWeather(this.city)
+          .subscribe(data => this.marine = data);
 
-        this.weatherService.getHistoricalWeather(city, '2026-09-15', '2026-09-20')
-          .subscribe({ next: data => console.log('MÉTODO 6:', data), error: e => console.error('Error M6:', e) });
+        this.loadHistorical();
+
+        this.loading = false;
       },
-      error: e => console.error('Error M1:', e)
+
+      error: error => {
+        console.error(error);
+        this.loading = false;
+      }
     });
+  }
+
+  loadHistorical() {
+    if (!this.city) return;
+
+    this.weatherService
+      .getHistoricalWeather(
+        this.city,
+        this.startDate,
+        this.endDate
+      )
+      .subscribe(data => {
+        this.historical = data;
+      });
+  }
+
+  getHistoricalDays() {
+    if (!this.historical?.daily) return [];
+
+    const daily = this.historical.daily;
+
+    return daily.time.map((date: string, i: number) => ({
+      date,
+      max: daily.temperature_2m_max[i],
+      min: daily.temperature_2m_min[i],
+      precipitation: daily.precipitation_sum[i],
+      wind: daily.wind_speed_10m_max[i]
+    }));
   }
 }
