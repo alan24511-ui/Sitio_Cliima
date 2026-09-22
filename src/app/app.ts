@@ -91,4 +91,13 @@ export class App {
       wind: daily.wind_speed_10m_max[i]
     }));
   }
+
+  /* ngOnInit() {
+  this.weatherService.getHistoricalForecast(19.4326, -99.1332, '2024-01-01', '2024-01-03')
+    .subscribe({
+      next: (data) => console.log('Historical Forecast:', data),
+      error: (err) => console.error('Error Historical Forecast:', err)
+    }); 
+  }*/
 }
+

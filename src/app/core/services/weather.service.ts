@@ -4,6 +4,7 @@ import { first, map, Observable } from 'rxjs';
 import { City } from '../models/city.model';
 import { CurrentWeather } from '../models/weather.model';
 import { AirQuality } from '../models/weather.model';
+import { HistoricalForecast } from '../models/weather.model';
 
 @Injectable({
   providedIn: 'root',
@@ -17,6 +18,7 @@ export class WeatherService {
   private readonly URL_ELEVATION = 'https://api.open-meteo.com/v1/elevation';
   private readonly URL_MARINE = 'https://marine-api.open-meteo.com/v1/marine';
   private readonly URL_HISTORICAL = 'https://archive-api.open-meteo.com/v1/archive';
+  private readonly URL_HISTORICAL_FORECAST = 'https://archive-api.open-meteo.com/v1/archive';
 
   // MÉTODO 1: nombre de ciudad -> lista de coincidencias con coordenadas
   getCities(name: string): Observable<City[]> {
@@ -142,7 +144,36 @@ getHistoricalWeather(
     .get(this.URL_HISTORICAL, { params })
     .pipe(first());
 }
-  // getHistoricalForecast(...)
+
+// MÉTODO 7: pronóstico histórico de un punto en un rango de fechas
+  getHistoricalForecast(lat: number, lon: number, startDate: string, endDate: string): Observable<HistoricalForecast> {
+
+    const params = new HttpParams()
+      .set('latitude', lat)
+      .set('longitude', lon)
+      .set('start_date', startDate)
+      .set('end_date', endDate)
+      .set('hourly', 'temperature_2m,precipitation,wind_speed_10m')
+      .set('timezone', 'auto');
+
+    return this.http.get(this.URL_HISTORICAL_FORECAST, { params })
+      .pipe(
+        first(),
+        map((data: any) => this.parseHistoricalForecast(data))
+      );
+  }
+
+  private parseHistoricalForecast(data: any): HistoricalForecast {
+    const hourly = data['hourly'] ?? {};
+
+    return {
+      time: hourly['time'] ?? [],
+      temperature2m: hourly['temperature_2m'] ?? [],
+      precipitation: hourly['precipitation'] ?? [],
+      windSpeed10m: hourly['wind_speed_10m'] ?? []
+    };
+  }
+
   // getECMWF(...)
   // getPreviousRuns(...)
   // getSingleRun(...)

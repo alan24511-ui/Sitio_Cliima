@@ -16,3 +16,10 @@ export interface AirQuality {
     pm10: number;
     europeanAqi: number;
 }
+
+export interface HistoricalForecast {
+  time: string[];
+  temperature2m?: number[];
+  precipitation?: number[];
+  windSpeed10m?: number[];
+}
