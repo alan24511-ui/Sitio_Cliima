@@ -7,91 +7,35 @@ import { WeatherService } from './core/services/weather.service';
   template: ''
 })
 export class App implements OnInit {
-
   private weatherService = inject(WeatherService);
 
   ngOnInit(): void {
-
     console.log('===== PRUEBA WEATHER SERVICE =====');
 
-    // MÉTODO 1: Buscar ciudades
-    console.log('--- MÉTODO 1: getCities ---');
-
     this.weatherService.getCities('Monterrey').subscribe({
-      next: (cities) => {
+      next: cities => {
+        console.log('MÉTODO 1:', cities);
+        if (!cities.length) return console.log('No se encontraron ciudades.');
 
-        console.log('Ciudades encontradas:', cities);
+        const city = cities[0];
+        console.log('Ciudad:', city);
 
-        if (cities.length > 0) {
+        this.weatherService.getCurrentWeather(city.latitude, city.longitude)
+          .subscribe({ next: data => console.log('MÉTODO 2:', data), error: e => console.error('Error M2:', e) });
 
-          const city = cities[0];
+        this.weatherService.getAirQuality(city.latitude, city.longitude)
+          .subscribe({ next: data => console.log('MÉTODO 3:', data), error: e => console.error('Error M3:', e) });
 
-          console.log('Ciudad seleccionada:', city);
+        this.weatherService.getElevation(city)
+          .subscribe({ next: data => console.log('MÉTODO 4:', data), error: e => console.error('Error M4:', e) });
 
-          // MÉTODO 2: Tiempo actual
-          console.log('--- MÉTODO 2: getCurrentWeather ---');
+        this.weatherService.getMarineWeather(city)
+          .subscribe({ next: data => console.log('MÉTODO 5:', data), error: e => console.error('Error M5:', e) });
 
-          this.weatherService
-            .getCurrentWeather(city.latitude, city.longitude)
-            .subscribe({
-              next: (weather) => {
-                console.log('Tiempo actual:', weather);
-              },
-              error: (error) => {
-                console.error('Error en getCurrentWeather:', error);
-              }
-            });
-
-          // MÉTODO 3: Calidad del aire
-          console.log('--- MÉTODO 3: getAirQuality ---');
-
-          this.weatherService
-            .getAirQuality(city.latitude, city.longitude)
-            .subscribe({
-              next: (air) => {
-                console.log('Calidad del aire:', air);
-              },
-              error: (error) => {
-                console.error('Error en getAirQuality:', error);
-              }
-            });
-
-          // MÉTODO 4: Elevación
-          console.log('--- MÉTODO 4: getElevation ---');
-
-          this.weatherService
-            .getElevation(city)
-            .subscribe({
-              next: (elevation) => {
-                console.log('Elevación:', elevation);
-              },
-              error: (error) => {
-                console.error('Error en getElevation:', error);
-              }
-            });
-
-          // MÉTODO 5: Información marina
-          console.log('--- MÉTODO 5: getMarineWeather ---');
-
-          this.weatherService
-            .getMarineWeather(city)
-            .subscribe({
-              next: (marine) => {
-                console.log('Información marina:', marine);
-              },
-              error: (error) => {
-                console.error('Error en getMarineWeather:', error);
-              }
-            });
-
-        } else {
-          console.log('No se encontraron ciudades.');
-        }
+        this.weatherService.getHistoricalWeather(city, '2026-09-15', '2026-09-20')
+          .subscribe({ next: data => console.log('MÉTODO 6:', data), error: e => console.error('Error M6:', e) });
       },
-
-      error: (error) => {
-        console.error('Error en getCities:', error);
-      }
+      error: e => console.error('Error M1:', e)
     });
   }
 }

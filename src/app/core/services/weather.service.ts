@@ -16,6 +16,7 @@ export class WeatherService {
   private readonly URL_AIR_QUALITY = 'https://air-quality-api.open-meteo.com/v1/air-quality';
   private readonly URL_ELEVATION = 'https://api.open-meteo.com/v1/elevation';
   private readonly URL_MARINE = 'https://marine-api.open-meteo.com/v1/marine';
+  private readonly URL_HISTORICAL = 'https://archive-api.open-meteo.com/v1/archive';
 
   // MÉTODO 1: nombre de ciudad -> lista de coincidencias con coordenadas
   getCities(name: string): Observable<City[]> {
@@ -119,7 +120,28 @@ getMarineWeather(city: City): Observable<any> {
     .pipe(
       first()
     );
-}  // getHistoricalWeather(...)
+}  
+// MÉTODO 6: clima histórico
+getHistoricalWeather(
+  city: City,
+  startDate: string,
+  endDate: string
+): Observable<any> {
+  const params = new HttpParams()
+    .set('latitude', city.latitude)
+    .set('longitude', city.longitude)
+    .set('start_date', startDate)
+    .set('end_date', endDate)
+    .set(
+      'daily',
+      'temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max'
+    )
+    .set('timezone', 'auto');
+
+  return this.http
+    .get(this.URL_HISTORICAL, { params })
+    .pipe(first());
+}
   // getHistoricalForecast(...)
   // getECMWF(...)
   // getPreviousRuns(...)
