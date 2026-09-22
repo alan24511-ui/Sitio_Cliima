@@ -9,3 +9,10 @@ export interface CurrentWeather {
     windDirection: number;
     isDay: boolean;
 }
+
+export interface AirQuality {
+    time: string;
+    pm2_5: number;
+    pm10: number;
+    europeanAqi: number;
+}

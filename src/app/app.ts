@@ -16,5 +16,6 @@ export class App implements OnInit {
   ngOnInit() {
     this.weatherService.getCities('Batman').subscribe(console.log);
     this.weatherService.getCurrentWeather(35.6762, 139.8833).subscribe(console.log);
+    this.weatherService.getAirQuality(20.6597, -103.3496).subscribe(console.log);
   }
 }
